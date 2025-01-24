@@ -1,0 +1,19 @@
+# List all Service Fabric nodes
+$nodes = Get-ServiceFabricNode
+
+# Loop through each node to query the .NET Framework version
+foreach ($node in $nodes) {
+    $nodeName = $node.NodeName
+
+    # Invoke remote command on the node
+    Invoke-Command -ComputerName $nodeName -ScriptBlock {
+        $frameworkKey = "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full"
+        if (Test-Path $frameworkKey) {
+            $version = Get-ItemProperty -Path $frameworkKey -Name Release
+            $releaseKey = $version.Release
+            Write-Output "Node: $($env:COMPUTERNAME), .NET Framework Release Key: $releaseKey"
+        } else {
+            Write-Output "Node: $($env:COMPUTERNAME), .NET Framework not found!"
+        }
+    }
+}
